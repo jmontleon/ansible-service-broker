@@ -89,7 +89,7 @@ var p = Plan{
 	Free:        PlanFree,
 	Bindable:    PlanBindable,
 	Parameters:  expectedPlanParameters,
-	Updates_to:  PlanUpdatesTo,
+	UpdatesTo:   PlanUpdatesTo,
 }
 
 const SpecVersion = "1.0"

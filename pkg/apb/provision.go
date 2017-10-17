@@ -43,7 +43,7 @@ func Provision(
 	// provision and update, save for passing through the method type. Provision
 	// provides a nice public interface, but the bulk of the work is passed to
 	// provision_or_update as an implementation detail.
-	return provision_or_update(
+	return provisionOrUpdate(
 		executionMethodProvision, instance, clusterConfig, log,
 	)
 }

@@ -31,10 +31,10 @@ type executionMethod string
 
 const (
 	executionMethodProvision executionMethod = "provision"
-	executionMethodUpdate    executionMethod = "provision"
+	executionMethodUpdate    executionMethod = "update"
 )
 
-func provision_or_update(
+func provisionOrUpdate(
 	method executionMethod,
 	instance *ServiceInstance,
 	clusterConfig ClusterConfig,

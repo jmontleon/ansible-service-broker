@@ -593,7 +593,7 @@ func (a AnsibleBroker) Provision(instanceUUID uuid.UUID, req *ProvisionRequest, 
 	} else {
 		// TODO: do we want to do synchronous provisioning?
 		a.log.Info("reverting to synchronous provisioning in progress")
-		_, extCreds, err := apb.Provision("provision", serviceInstance, a.clusterConfig, a.log)
+		_, extCreds, err := apb.Provision(serviceInstance, a.clusterConfig, a.log)
 		if extCreds != nil {
 			a.log.Debug("broker::Provision, got ExtractedCredentials!")
 			err = a.dao.SetExtractedCredentials(instanceUUID.String(), extCreds)
@@ -1024,7 +1024,7 @@ func (a AnsibleBroker) Update(instanceUUID uuid.UUID, req *UpdateRequest, async 
 	} else {
 		// TODO: do we want to do synchronous updating?
 		a.log.Info("reverting to synchronous update in progress")
-		_, extCreds, err := apb.Provision("update", si, a.clusterConfig, a.log)
+		_, extCreds, err := apb.Update(si, a.clusterConfig, a.log)
 		if extCreds != nil {
 			a.log.Debug("broker::Update, got ExtractedCredentials!")
 			err = a.dao.SetExtractedCredentials(instanceUUID.String(), extCreds)

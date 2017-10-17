@@ -80,7 +80,7 @@ func provision_or_update(
 	}
 
 	sm := NewServiceAccountManager(log)
-	sm.DestroyApbSandbox(executionContext, clusterConfig.Namespace)
+	sm.DestroyApbSandbox(executionContext, clusterConfig)
 	if err != nil {
 		log.Errorf("apb::%s error occurred", string(method))
 		log.Error("%s", err.Error())

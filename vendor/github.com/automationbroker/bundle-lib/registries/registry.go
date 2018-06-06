@@ -218,6 +218,8 @@ func NewCustomRegistry(configuration Config, adapter adapters.Adapter, asbNamesp
 			adapter = &adapters.LocalOpenShiftAdapter{Config: c}
 		case "helm":
 			adapter = &adapters.HelmAdapter{Config: c}
+		case "galaxy":
+			adapter = &adapters.GalaxyAdapter{Config: c}
 		default:
 			panic("Unknown registry")
 		}

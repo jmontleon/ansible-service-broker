@@ -18,10 +18,9 @@ package bundle
 
 import (
 	"encoding/json"
-	"reflect"
-
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // Parameters - generic string to object or value parameter
@@ -101,7 +100,7 @@ func (p *Plan) GetParameter(name string) *ParameterDescriptor {
 type Spec struct {
 	ID          string                 `json:"id"`
 	Runtime     int                    `json:"runtime"`
-	Version     string                 `json:"version"`
+	Version     json.Number            `json:"version"`
 	FQName      string                 `json:"name" yaml:"name" mapstructure:"name"`
 	Image       string                 `json:"image" yaml:"-"`
 	Tags        []string               `json:"tags"`

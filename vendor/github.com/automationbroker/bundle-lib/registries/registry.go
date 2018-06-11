@@ -311,7 +311,7 @@ func validateSpecs(inSpecs []*bundle.Spec) []*bundle.Spec {
 
 func validateSpecFormat(spec *bundle.Spec) (bool, string) {
 	// Specs must have compatible version
-	if !isCompatibleVersion(spec.Version, "1.0", "1.0") {
+	if !isCompatibleVersion(string(spec.Version), "1.0", "1.0") {
 		return false, fmt.Sprintf(
 			"APB Spec version [%v] out of bounds %v <= %v",
 			spec.Version,

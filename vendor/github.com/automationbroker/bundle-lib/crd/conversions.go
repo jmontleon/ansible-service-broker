@@ -64,7 +64,7 @@ func ConvertSpecToBundle(spec *bundle.Spec) (v1alpha1.BundleSpec, error) {
 
 	return v1alpha1.BundleSpec{
 		Runtime:     spec.Runtime,
-		Version:     spec.Version,
+		Version:     string(spec.Version),
 		FQName:      spec.FQName,
 		Image:       spec.Image,
 		Tags:        spec.Tags,
@@ -116,7 +116,7 @@ func ConvertBundleToSpec(spec v1alpha1.BundleSpec, id string) (*bundle.Spec, err
 	return &bundle.Spec{
 		ID:          id,
 		Runtime:     spec.Runtime,
-		Version:     spec.Version,
+		Version:     json.Number(spec.Version),
 		FQName:      spec.FQName,
 		Image:       spec.Image,
 		Tags:        spec.Tags,

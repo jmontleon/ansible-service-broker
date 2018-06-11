@@ -22,17 +22,16 @@ import (
 	"fmt"
 	"github.com/automationbroker/bundle-lib/bundle"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v1"
+	//yaml "gopkg.in/yaml.v1"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 const galaxyName = "galaxy"
-const galaxySearchURL = "https://galaxy.ansible.com/api/v1/search/roles/?tags=apb"
-const galaxyRoleURL = "https://galaxy.ansible.com/api/v1/roles/%v/"
-const galaxyApiURL = "https://galaxy.ansible.com/api/v1"
-const apbYamlURL = "https://raw.githubusercontent.com/%v/%v/%v/apb.yml"
+const galaxySearchURL = "https://galaxy-qa.ansible.com/api/v1/search/content/?content_type=apb"
+const galaxyRoleURL = "https://galaxy-qa.ansible.com/api/v1/content/%v/"
+const galaxyApiURL = "https://galaxy-qa.ansible.com/api/v1"
 
 // GalaxyAdapter - Galaxy Adapter
 type GalaxyAdapter struct {
@@ -49,15 +48,18 @@ type GalaxyDependency struct {
 type GalaxyRole struct {
 	Name         string              `json:"name"`
 	Username     string              `json:"username"`
-	RoleID       int                 `json:"role_id"`
+	RoleID       int                 `json:"id"`
 	Dependencies []*GalaxyDependency `json:"dependencies"`
 }
 
 // GalaxyRoleResponse - Role Response from Ansible Galaxy.
 type GalaxyRoleResponse struct {
-	User   string `json:"github_user"`
-	Repo   string `json:"github_repo"`
-	Commit string `json:"commit"`
+	Metadata GalaxyRoleMetadata `json:"metadata"`
+}
+
+// GalaxyRoleResponse - Role Response from Ansible Galaxy.
+type GalaxyRoleMetadata struct {
+	Spec bundle.Spec `json:"apb_metadata"`
 }
 
 // GalaxySearchResponse - Search response for Galaxy.
@@ -203,24 +205,11 @@ func (r GalaxyAdapter) loadSpec(imageName string) (*bundle.Spec, error) {
 		return nil, err
 	}
 
-	specReq, err := http.NewRequest("GET", fmt.Sprintf(apbYamlURL, roleResp.User, roleResp.Repo, roleResp.Commit), nil)
-	if err != nil {
-		log.Errorf("unable to get apb.yaml", err)
-		return nil, err
-	}
-
-	specResp, err := http.DefaultClient.Do(specReq)
-	if err != nil {
-		log.Errorf("unable to get apb.yaml", err)
-		return nil, err
-	}
-	defer specResp.Body.Close()
-	specFile, err := ioutil.ReadAll(resp.Body)
-
-	err = yaml.Unmarshal(specFile, &spec)
-	if err != nil {
-		return nil, err
-	}
+	spec = roleResp.Metadata.Spec
+	//err = json.Unmarshal([]byte(roleResp.Metadata.Spec), &spec)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	spec.Runtime = 2
 	spec.Image = "ansibleplaybookbundle/apb-base"

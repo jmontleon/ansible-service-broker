@@ -38,28 +38,33 @@ type GalaxyAdapter struct {
 	Config Configuration
 }
 
-// GalaxyDependency - Dependency from an Ansible Galaxy role.
-type GalaxyDependency struct {
-	Namespace string `json:"namespace"`
-	Name      string `json:"name"`
-}
-
 // GalaxyRole - Role from Ansible Galaxy.
 type GalaxyRole struct {
-	Name         string              `json:"name"`
-	Username     string              `json:"username"`
-	RoleID       int                 `json:"id"`
-	Dependencies []*GalaxyDependency `json:"dependencies"`
+	Name    string            `json:"name"`
+	RoleID  int               `json:"id"`
+	Summary GalaxyRoleSummary `json:"summary_fields"`
 }
 
 // GalaxyRoleResponse - Role Response from Ansible Galaxy.
 type GalaxyRoleResponse struct {
+	Name     string             `json:"name"`
 	Metadata GalaxyRoleMetadata `json:"metadata"`
+	Summary  GalaxyRoleSummary  `json:"summary_fields"`
 }
 
-// GalaxyRoleResponse - Role Response from Ansible Galaxy.
+// GalaxyRoleMetadata - Role Metadata obtained from Role Response.
 type GalaxyRoleMetadata struct {
 	Spec bundle.Spec `json:"apb_metadata"`
+}
+
+// GalaxyRoleSummary - Role Summary obtained from Role Response.
+type GalaxyRoleSummary struct {
+	Namespace GalaxyRoleNamespace `json:"namespace"`
+}
+
+// GalaxyRoleNamespace - Role Namespace obtained from Role Response Summary.
+type GalaxyRoleNamespace struct {
+	Name string `json:"name"`
 }
 
 // GalaxySearchResponse - Search response for Galaxy.
@@ -167,7 +172,7 @@ func (r GalaxyAdapter) getNextImages(ctx context.Context,
 		go r.getNextImages(ctx, fmt.Sprintf("%v%v", galaxyApiURL, iResp.Next), ch, cancelFunc)
 	}
 	for _, imageName := range iResp.Results {
-		log.Debugf("Trying to load %v.%v", imageName.Username, imageName.Name)
+		log.Debugf("Trying to load %v.%v", imageName.Summary.Namespace.Name, imageName.Name)
 		go func(image *GalaxyRole) {
 			select {
 			case <-ctx.Done():
@@ -176,7 +181,7 @@ func (r GalaxyAdapter) getNextImages(ctx context.Context,
 					ctx.Err(), image.Name)
 				return
 			default:
-				ch <- fmt.Sprintf("%v.%v#%v", image.Username, image.Name, image.RoleID)
+				ch <- fmt.Sprintf("%v.%v#%v", image.Summary.Namespace.Name, image.Name, image.RoleID)
 			}
 		}(imageName)
 	}
@@ -206,13 +211,29 @@ func (r GalaxyAdapter) loadSpec(imageName string) (*bundle.Spec, error) {
 	}
 
 	spec = roleResp.Metadata.Spec
-	//err = json.Unmarshal([]byte(roleResp.Metadata.Spec), &spec)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	spec.Runtime = 2
-	spec.Image = "ansibleplaybookbundle/apb-base"
+	spec.Image = "djzager/apb-base:runner"
+
+	role_param := bundle.ParameterDescriptor{
+		Name:      "role_name",
+		Title:     "Galaxy Role Name",
+		Type:      "string",
+		Updatable: false,
+		Required:  true,
+		Default:   roleResp.Name,
+	}
+	namespace_param := bundle.ParameterDescriptor{
+		Name:      "role_namespace",
+		Title:     "Galaxy Role Namespace",
+		Type:      "string",
+		Updatable: false,
+		Required:  true,
+		Default:   roleResp.Summary.Namespace.Name,
+	}
+	for key, plan := range spec.Plans {
+		plan.Parameters = append(plan.Parameters, role_param, namespace_param)
+		spec.Plans[key].Parameters = plan.Parameters
+	}
 
 	return &spec, nil
 }

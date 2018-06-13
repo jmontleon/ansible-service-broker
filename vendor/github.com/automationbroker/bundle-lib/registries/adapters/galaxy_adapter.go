@@ -29,7 +29,8 @@ import (
 )
 
 const galaxyName = "galaxy"
-const galaxySearchURL = "https://galaxy-qa.ansible.com/api/v1/search/content/?content_type=apb"
+const galaxySearchURL = "https://galaxy-qa.ansible.com/api/v1/content/?content_type__name=apb"
+const galaxyNSSearchURL = "https://galaxy-qa.ansible.com/api/v1/content/?content_type__name=apb&namespace__name=%v"
 const galaxyRoleURL = "https://galaxy-qa.ansible.com/api/v1/content/%v/"
 const galaxyApiURL = "https://galaxy-qa.ansible.com/api/v1"
 
@@ -89,12 +90,19 @@ func (r GalaxyAdapter) GetImageNames() ([]string, error) {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
+	var imageResp *GalaxySearchResponse
+	var err error
 	// Intial call to getNextImages this will fan out to retrieve all the values.
-	imageResp, err := r.getNextImages(ctx, galaxySearchURL, channel, cancelFunc)
+	if len(r.Config.Org) == 0 {
+		imageResp, err = r.getNextImages(ctx, galaxySearchURL, channel, cancelFunc)
+	} else {
+		imageResp, err = r.getNextImages(ctx, fmt.Sprintf(galaxyNSSearchURL, r.Config.Org), channel, cancelFunc)
+	}
 	// if there was an issue with the first call, return the error
 	if err != nil {
 		return nil, err
 	}
+
 	// If no results in the fist call then close the channel as nothing will get loaded.
 	if len(imageResp.Results) == 0 {
 		log.Info("canceled retrieval as no items in org")

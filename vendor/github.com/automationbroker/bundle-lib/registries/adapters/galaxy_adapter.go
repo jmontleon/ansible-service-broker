@@ -220,8 +220,12 @@ func (r GalaxyAdapter) loadSpec(imageName string) (*bundle.Spec, error) {
 
 	spec = roleResp.Metadata.Spec
 	spec.Runtime = 2
-	spec.Image = "djzager/apb-base:runner"
 
+	if len(r.Config.Runner) == 0 {
+		spec.Image = "ansibleplaybookbundle/apb-base:latest"
+	} else {
+		spec.Image = r.Config.Runner
+	}
 	role_param := bundle.ParameterDescriptor{
 		Name:      "role_name",
 		Title:     "Galaxy Role Name",
